@@ -4,7 +4,8 @@ import gymnasium as gym
 import torch
 
 from model import DQN
-
+import csv
+import os
 
 def evaluate(
     model_path: str = "dqn_cartpole.pt",
@@ -43,6 +44,22 @@ def evaluate(
 
     rewards = []
 
+    os.makedirs("logs", exist_ok=True)
+
+    evaluation_file = open(
+        "logs/evaluation_log.csv",
+        "w",
+        newline="",
+        encoding="utf-8",
+    )
+
+    evaluation_writer = csv.writer(evaluation_file)
+
+    evaluation_writer.writerow([
+        "episode",
+        "reward",
+    ])
+
     for episode in range(1, num_episodes + 1):
         state, _ = env.reset()
 
@@ -75,12 +92,33 @@ def evaluate(
 
         rewards.append(total_reward)
 
+        evaluation_writer.writerow([
+            episode,
+            total_reward,
+        ])
+
         print(
             f"Evaluation Episode {episode:2d}/{num_episodes} | "
             f"Reward: {total_reward:.1f}"
         )
 
     average_reward = sum(rewards) / len(rewards)
+
+    evaluation_writer.writerow([])
+    evaluation_writer.writerow([
+        "average_reward",
+        average_reward,
+    ])
+    evaluation_writer.writerow([
+        "minimum_reward",
+        min(rewards),
+    ])
+    evaluation_writer.writerow([
+        "maximum_reward",
+        max(rewards),
+    ])
+
+    evaluation_file.close()
 
     print("\nEvaluation complete.")
     print(f"Average reward: {average_reward:.2f}")
