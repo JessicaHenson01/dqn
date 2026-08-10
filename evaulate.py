@@ -1,11 +1,14 @@
+
 """Evaluate a trained DQN agent on CartPole-v1."""
+
+import csv
+import os
 
 import gymnasium as gym
 import torch
 
 from model import DQN
-import csv
-import os
+
 
 def evaluate(
     model_path: str = "dqn_cartpole.pt",
@@ -46,89 +49,91 @@ def evaluate(
 
     os.makedirs("logs", exist_ok=True)
 
-    evaluation_file = open(
+    with open(
         "logs/evaluation_log.csv",
         "w",
         newline="",
         encoding="utf-8",
-    )
-
-    evaluation_writer = csv.writer(evaluation_file)
-
-    evaluation_writer.writerow([
-        "episode",
-        "reward",
-    ])
-
-    for episode in range(1, num_episodes + 1):
-        state, _ = env.reset()
-
-        state, _ = env.reset()
-        print(f"Episode {episode} initial state: {state}")
-
-        done = False
-        total_reward = 0.0
-
-        while not done:
-            state_tensor = torch.tensor(
-                state,
-                dtype=torch.float32,
-                device=device,
-            ).unsqueeze(0)
-
-            with torch.no_grad():
-                q_values = model(state_tensor)
-
-            action = int(
-                torch.argmax(q_values, dim=1).item()
-            )
-
-            next_state, reward, terminated, truncated, _ = env.step(action)
-
-            done = terminated or truncated
-
-            state = next_state
-            total_reward += reward
-
-        rewards.append(total_reward)
+    ) as evaluation_file:
+        evaluation_writer = csv.writer(evaluation_file)
 
         evaluation_writer.writerow([
-            episode,
-            total_reward,
+            "episode",
+            "reward",
         ])
 
-        print(
-            f"Evaluation Episode {episode:2d}/{num_episodes} | "
-            f"Reward: {total_reward:.1f}"
-        )
+        for episode in range(1, num_episodes + 1):
+            state, _ = env.reset()
 
-    average_reward = sum(rewards) / len(rewards)
+            done = False
+            total_reward = 0.0
 
-    evaluation_writer.writerow([])
-    evaluation_writer.writerow([
-        "average_reward",
-        average_reward,
-    ])
-    evaluation_writer.writerow([
-        "minimum_reward",
-        min(rewards),
-    ])
-    evaluation_writer.writerow([
-        "maximum_reward",
-        max(rewards),
-    ])
+            while not done:
+                state_tensor = torch.tensor(
+                    state,
+                    dtype=torch.float32,
+                    device=device,
+                ).unsqueeze(0)
 
-    evaluation_file.close()
+                with torch.no_grad():
+                    q_values = model(state_tensor)
+
+                action = int(
+                    torch.argmax(q_values, dim=1).item()
+                )
+
+                next_state, reward, terminated, truncated, _ = env.step(action)
+
+                done = terminated or truncated
+
+                state = next_state
+                total_reward += reward
+
+            rewards.append(total_reward)
+
+            evaluation_writer.writerow([
+                episode,
+                total_reward,
+            ])
+
+            print(
+                f"Evaluation Episode {episode:3d}/{num_episodes} | "
+                f"Reward: {total_reward:.1f}"
+            )
+
+        average_reward = sum(rewards) / len(rewards)
+        minimum_reward = min(rewards)
+        maximum_reward = max(rewards)
+
+        evaluation_writer.writerow([])
+        evaluation_writer.writerow([
+            "metric",
+            "value",
+        ])
+        evaluation_writer.writerow([
+            "average_reward",
+            average_reward,
+        ])
+        evaluation_writer.writerow([
+            "minimum_reward",
+            minimum_reward,
+        ])
+        evaluation_writer.writerow([
+            "maximum_reward",
+            maximum_reward,
+        ])
 
     print("\nEvaluation complete.")
     print(f"Average reward: {average_reward:.2f}")
-    print(f"Minimum reward: {min(rewards):.1f}")
-    print(f"Maximum reward: {max(rewards):.1f}")
+    print(f"Minimum reward: {minimum_reward:.1f}")
+    print(f"Maximum reward: {maximum_reward:.1f}")
 
     if average_reward >= 400:
         print("Success: average evaluation reward is at least 400.")
     else:
         print("Average evaluation reward is below 400.")
+
+    print("Evaluation log saved to logs/evaluation_log.csv")
 
     env.close()
 

@@ -1,19 +1,19 @@
 # Deep Q-Network for CartPole-v1
 
-This project implements a Deep Q-Network (DQN) from scratch using PyTorch and the Gymnasium `CartPole-v1` environment. The agent learns to balance a pole attached to a moving cart by estimating Q-values for the available actions and selecting actions using an epsilon-greedy policy during training.
+This project implements a Deep Q-Network (DQN) from scratch using PyTorch and the Gymnasium `CartPole-v1` environment. The agent learns to balance a pole on a moving cart by estimating Q-values for the available actions and selecting actions using an epsilon-greedy policy during training.
 
-The implementation includes an online Q-network, target network, experience replay buffer, epsilon-greedy exploration, periodic target-network updates, model checkpointing, and greedy policy evaluation.
+The implementation includes a Q-network, target network, experience replay buffer, epsilon-greedy exploration, periodic target-network updates, model checkpointing, and greedy policy evaluation.
 
 ## Environment Setup
 
-This project uses the Gymnasium `CartPole-v1` environment. The environment has a four-dimensional observation space containing:
+This project uses the Gymnasium `CartPole-v1` environment. The environment has a four-dimensional observation space with:
 
 1. Cart position
 2. Cart velocity
 3. Pole angle
 4. Pole angular velocity
 
-The action space contains two discrete actions corresponding to applying force to the cart in either direction.
+The action space has two discrete actions: applying force to the cart in different directions.
 
 The environment can be tested independently using `test_environment.py`.
 
@@ -30,22 +30,10 @@ Install the required dependencies with:
 python -m pip install -r requirements.txt
 ```
 
-On Windows, the Python launcher can also be used:
-
-```bash
-py -m pip install -r requirements.txt
-```
-
 To verify the CartPole environment:
 
 ```bash
 python test_environment.py
-```
-
-or on Windows:
-
-```bash
-py test_environment.py
 ```
 
 ## Project Structure
@@ -70,14 +58,14 @@ dqn/
 
 ### File Descriptions
 
-* `model.py` — Defines the PyTorch neural network used to estimate Q-values.
-* `agent.py` — Implements the DQN agent, epsilon-greedy action selection, online and target networks, and learning updates.
-* `replay_buffer.py` — Implements the experience replay buffer and minibatch sampling.
-* `collect_data.py` — Demonstrates epsilon-greedy environment interaction and transition collection.
-* `train.py` — Runs the complete DQN training procedure and periodic greedy evaluation.
-* `evaluate.py` — Loads the saved model and evaluates it without exploration.
-* `test_environment.py` — Verifies that `CartPole-v1` can be created, stepped through, and rendered.
-* `test_agent.py` — Performs basic checks of the DQN architecture, replay buffer, action selection, and target-network update.
+* `model.py` — Defines the neural network used to estimate Q-values
+* `agent.py` — Implements the DQN agent, epsilon-greedy action selection, online and target networks, and learning updates
+* `replay_buffer.py` — Implements the experience replay buffer and minibatch sampling
+* `collect_data.py` — Demonstrates epsilon-greedy environment interaction and transition collection
+* `train.py` — Runs the complete DQN training procedure and periodic greedy evaluation
+* `evaluate.py` — Loads the saved model and evaluates it without exploration
+* `test_environment.py` — Verifies that `CartPole-v1` can be created, stepped through, and rendered
+* `test_agent.py` — Performs basic checks of the DQN architecture, replay buffer, action selection, and target-network update
 * `logs/` — Contains CSV logs generated during training and evaluation.
 * `dqn_cartpole.pt` — Saved weights for the best-performing DQN checkpoint.
 
@@ -101,18 +89,18 @@ Linear (128 → 2)
 Q-values for each action
 ```
 
-The four input values correspond to the CartPole observation. The two outputs represent the estimated Q-values of the two available actions.
+The four input values matching the CartPole observation. The two outputs match the estimated Q-values of the 2 available actions.
 
 The output values are Q-value estimates rather than probabilities. During greedy action selection, the action with the highest predicted Q-value is selected.
 
 ## Online and Target Networks
 
-The agent maintains two copies of the DQN:
+The agent has 2 copies of the DQN:
 
-* **Online Q-network:** Used to select actions and updated through gradient descent.
-* **Target Q-network:** Used to calculate more stable target Q-values during learning.
+* **Online Q-network:** Used to select actions and updated through gradient descent
+* **Target Q-network:** Used to calculate more stable target Q-values during learning
 
-The target network begins with the same parameters as the online network. During training, its parameters are periodically replaced with the current online-network parameters using a hard update.
+The target network starts with the same parameters as the online network. During training, its parameters are replaced with the current online-network parameters using a hard update.
 
 ## Experience Replay
 
@@ -122,7 +110,7 @@ Each environment transition is stored in a replay buffer as:
 (state, action, reward, next_state, done, info)
 ```
 
-The replay buffer can contain up to 100,000 transitions. Once the initial warm-up period is complete, random minibatches of 64 transitions are sampled from the buffer for training.
+Once the initial warm-up period is complete, random minibatches of 64 transitions are sampled from the buffer for training.
 
 Random replay sampling reduces the correlation between consecutive environment observations and allows experiences to be reused for multiple learning updates.
 
@@ -152,9 +140,9 @@ Epsilon begins at 1.0 to encourage exploration. It gradually decreases during tr
 
 ## DQN Training
 
-Training uses an epsilon-greedy policy. At each environment step, the agent either chooses a random action with probability epsilon or chooses the action with the highest Q-value predicted by the online network.
+Training uses an epsilon-greedy policy. At each step, the agent chooses a random action with probability epsilon or the action with the highest Q-value predicted by the online network.
 
-Training begins after 1,000 environment transitions have been collected. A minibatch is sampled from replay memory and the online network is optimized using the DQN target:
+Training begins after 1,000 environment transitions. A minibatch is sampled from replay memory and the online network is optimized using the DQN target:
 
 ```text
 target = reward + gamma * max(Q_target(next_state))
@@ -170,12 +158,6 @@ Run:
 
 ```bash
 python train.py
-```
-
-or on Windows:
-
-```bash
-py train.py
 ```
 
 Training runs for 500 episodes.
@@ -212,7 +194,7 @@ The rolling training reward may differ substantially from greedy evaluation perf
 
 ## Evaluation
 
-The saved checkpoint is evaluated using a purely greedy policy. No epsilon-greedy exploration is used during final evaluation.
+The saved checkpoint is evaluated using a purely greedy policy
 
 Run:
 
@@ -220,13 +202,7 @@ Run:
 python evaluate.py
 ```
 
-or:
-
-```bash
-py evaluate.py
-```
-
-The evaluation script loads `dqn_cartpole.pt`, runs multiple independent CartPole episodes, and reports the reward for each episode along with the average, minimum, and maximum reward.
+The evaluation script loads `dqn_cartpole.pt`, runs multiple CartPole episodes, and reports the reward for each episode along with the average, minimum, and maximum reward.
 
 A reward of 500 indicates that the agent kept the pole balanced for the full `CartPole-v1` episode.
 
@@ -234,7 +210,7 @@ A reward of 500 indicates that the agent kept the pole balanced for the full `Ca
 
 During development, the DQN learned to successfully balance the CartPole and reached the maximum reward of 500 during greedy evaluation.
 
-Periodic evaluation also demonstrated why evaluating independently from training reward is important. Training rewards remained noisy because epsilon-greedy exploration deliberately introduced random actions, while greedy evaluations provided a clearer measurement of the learned policy.
+Periodic evaluation also demonstrated why evaluating seprately from training reward is important. Training rewards remained noisy because epsilon-greedy exploration introduced random actions, while greedy evaluations provided a clearer measurement of the learned policy.
 
 The best-performing model is retained in `dqn_cartpole.pt` and can be reproduced or evaluated using the scripts described above.
 
@@ -250,18 +226,4 @@ python train.py
 python evaluate.py
 ```
 
-On Windows with the Python launcher:
-
-```bash
-py -m pip install -r requirements.txt
-py test_environment.py
-py test_agent.py
-py train.py
-py evaluate.py
-```
-
 The training procedure will generate a new `training_log.csv` and save the best model checkpoint to `dqn_cartpole.pt`.
-
-## Notes
-
-The implementation is written directly in PyTorch and Gymnasium without reinforcement-learning libraries such as Stable-Baselines3 or CleanRL. The DQN components, replay buffer, exploration policy, training procedure, target-network updates, and evaluation loop are implemented explicitly in this repository.
