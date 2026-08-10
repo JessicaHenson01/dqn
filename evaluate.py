@@ -74,9 +74,19 @@ def run_episode(
     env: gym.Env,
     model: DQN,
     device: torch.device,
+    seed: int,
 ) -> float:
-    """Run one greedy evaluation episode and return its reward."""
-    state, _ = env.reset()
+    """Run one greedy episode from a harder initial state."""
+    state, _ = env.reset(
+        seed=seed,
+        options={
+            "low": -0.1,
+            "high": 0.1,
+        },
+    )
+
+    if seed <= 5:
+        print(f"Initial state {seed}: {state}")
 
     total_reward = 0.0
     done = False
@@ -88,7 +98,9 @@ def run_episode(
             device=device,
         )
 
-        state, reward, terminated, truncated, _ = env.step(action)
+        state, reward, terminated, truncated, _ = (
+            env.step(action)
+        )
 
         done = terminated or truncated
         total_reward += reward
@@ -100,11 +112,11 @@ def save_evaluation_log(
     rewards: list[float],
     result: EvaluationResult,
 ) -> None:
-    """Write episode rewards and summary statistics to CSV."""
+    """Write stress-test rewards and statistics to CSV."""
     log_directory = Path("logs")
     log_directory.mkdir(exist_ok=True)
 
-    log_path = log_directory / "evaluation_log.csv"
+    log_path = log_directory / "stress_evaluation_log.csv"
 
     with log_path.open(
         "w",
@@ -118,7 +130,10 @@ def save_evaluation_log(
             "reward",
         ])
 
-        for episode, reward in enumerate(rewards, start=1):
+        for episode, reward in enumerate(
+            rewards,
+            start=1,
+        ):
             writer.writerow([
                 episode,
                 reward,
@@ -154,24 +169,38 @@ def summarize_rewards(
     )
 
 
-def print_summary(result: EvaluationResult) -> None:
-    """Print final evaluation statistics."""
-    print("\nEvaluation complete.")
-    print(f"Average reward: {result.average_reward:.2f}")
-    print(f"Minimum reward: {result.minimum_reward:.1f}")
-    print(f"Maximum reward: {result.maximum_reward:.1f}")
+def print_summary(
+    result: EvaluationResult,
+) -> None:
+    """Print final stress-test statistics."""
+    print("\nStress evaluation complete.")
+    print(
+        f"Average reward: "
+        f"{result.average_reward:.2f}"
+    )
+    print(
+        f"Minimum reward: "
+        f"{result.minimum_reward:.1f}"
+    )
+    print(
+        f"Maximum reward: "
+        f"{result.maximum_reward:.1f}"
+    )
 
     if result.average_reward >= 400:
         print(
-            "Success: average evaluation reward "
+            "Average stress-test reward "
             "is at least 400."
         )
     else:
-        print("Average evaluation reward is below 400.")
+        print(
+            "Average stress-test reward "
+            "is below 400."
+        )
 
     print(
-        "Evaluation log saved to "
-        "logs/evaluation_log.csv"
+        "Stress evaluation log saved to "
+        "logs/stress_evaluation_log.csv"
     )
 
 
@@ -179,11 +208,17 @@ def evaluate(
     model_path: str = "dqn_cartpole.pt",
     num_episodes: int = 100,
 ) -> None:
-    """Evaluate a saved DQN using a purely greedy policy."""
+    """Stress-test a saved DQN using a greedy policy."""
     device = get_device()
+
+    # Standard CartPole-v1 keeps the normal 500-step limit.
     env = gym.make("CartPole-v1")
 
     print(f"Using device: {device}")
+    print(
+        "Stress test reset range: "
+        "[-0.1, 0.1]"
+    )
 
     model = load_model(
         env=env,
@@ -198,6 +233,7 @@ def evaluate(
             env=env,
             model=model,
             device=device,
+            seed=episode,
         )
 
         rewards.append(reward)
