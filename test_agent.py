@@ -4,6 +4,7 @@ import gymnasium as gym
 import torch
 
 from agent import DQNAgent
+from replay_buffer import Experience
 
 
 def main():
@@ -42,14 +43,16 @@ def main():
 
     done = terminated or truncated
 
-    agent.store_transition(
-        state,
-        action,
-        reward,
-        next_state,
-        done,
-        info,
+    experience = Experience(
+        state=state,
+        action=action,
+        reward=reward,
+        next_state=next_state,
+        done=done,
+        info=info,
     )
+
+    agent.store_transition(experience)
 
     print("Replay buffer size:", len(agent.replay_buffer))
 

@@ -1,7 +1,44 @@
+"""Collect CartPole experiences using an epsilon-greedy DQN agent."""
+
 import gymnasium as gym
+import numpy as np
 import torch
 
 from agent import DQNAgent
+from replay_buffer import Experience
+
+
+NUM_EPISODES = 10
+EPSILON = 1.0
+
+
+def step_and_store(
+    env: gym.Env,
+    agent: DQNAgent,
+    state: np.ndarray,
+    epsilon: float,
+) -> tuple[np.ndarray, float, bool]:
+    """Take one action, store the transition, and return the result."""
+    action = agent.select_action(
+        state=state,
+        epsilon=epsilon,
+    )
+
+    next_state, reward, terminated, truncated, info = env.step(action)
+    done = terminated or truncated
+
+    experience = Experience(
+        state,
+        action,
+        float(reward),
+        next_state,
+        done,
+        info,
+    )
+
+    agent.store_transition(experience)
+
+    return next_state, float(reward), done
 
 
 def collect_episodes(
@@ -10,41 +47,30 @@ def collect_episodes(
     num_episodes: int,
     epsilon: float,
 ) -> list[float]:
-
+    """Collect transitions across multiple CartPole episodes."""
     episode_rewards = []
 
-    for episode in range(num_episodes):
+    for episode in range(1, num_episodes + 1):
         state, _ = env.reset()
-
-        done = False
         total_reward = 0.0
 
-        while not done:
-            action = agent.select_action(
+        while True:
+            state, reward, done = step_and_store(
+                env=env,
+                agent=agent,
                 state=state,
                 epsilon=epsilon,
             )
 
-            next_state, reward, terminated, truncated, info = env.step(action)
-
-            done = terminated or truncated
-
-            agent.store_transition(
-                state=state,
-                action=action,
-                reward=reward,
-                next_state=next_state,
-                done=done,
-                info=info,
-            )
-
-            state = next_state
             total_reward += reward
+
+            if done:
+                break
 
         episode_rewards.append(total_reward)
 
         print(
-            f"Episode {episode + 1}/{num_episodes} | "
+            f"Episode {episode}/{num_episodes} | "
             f"Reward: {total_reward:.0f} | "
             f"Replay Buffer: {len(agent.replay_buffer)}"
         )
@@ -53,35 +79,33 @@ def collect_episodes(
 
 
 def main() -> None:
+    """Create the DQN agent and collect initial experience."""
     env = gym.make("CartPole-v1")
-
-    state_size = env.observation_space.shape[0]
-    action_size = env.action_space.n
 
     device = torch.device(
         "cuda" if torch.cuda.is_available() else "cpu"
     )
 
     agent = DQNAgent(
-        state_size=state_size,
-        action_size=action_size,
+        state_size=env.observation_space.shape[0],
+        action_size=env.action_space.n,
         device=device,
     )
-
-    num_episodes = 10
-    epsilon = 1.0
 
     rewards = collect_episodes(
         env=env,
         agent=agent,
-        num_episodes=num_episodes,
-        epsilon=epsilon,
+        num_episodes=NUM_EPISODES,
+        epsilon=EPSILON,
     )
 
     print("\nData collection complete.")
     print(f"Episodes collected: {len(rewards)}")
     print(f"Transitions collected: {len(agent.replay_buffer)}")
-    print(f"Average reward: {sum(rewards) / len(rewards):.2f}")
+    print(
+        f"Average reward: "
+        f"{sum(rewards) / len(rewards):.2f}"
+    )
 
     env.close()
 

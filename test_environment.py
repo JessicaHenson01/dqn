@@ -1,10 +1,16 @@
+"""Test the Gymnasium CartPole-v1 environment with random actions."""
+
 import gymnasium as gym
 
 
-def main():
-    env = gym.make("CartPole-v1", render_mode="human")
+def main() -> None:
+    """Run one CartPole episode using randomly sampled actions."""
+    env = gym.make(
+        "CartPole-v1",
+        render_mode="human",
+    )
 
-    state, info = env.reset()
+    state, _ = env.reset()
 
     print("Initial state:", state)
     print("Observation space:", env.observation_space)
@@ -15,20 +21,22 @@ def main():
     for step in range(200):
         action = env.action_space.sample()
 
-        next_state, reward, terminated, truncated, info = env.step(action)
+        _, reward, terminated, truncated, _ = env.step(action)
 
         total_reward += reward
 
         print(
             f"Step {step + 1}: "
             f"action={action}, reward={reward}, "
-            f"terminated={terminated}, truncated={truncated}"
+            f"terminated={terminated}, "
+            f"truncated={truncated}"
         )
 
-        state = next_state
-
         if terminated or truncated:
-            print(f"Episode finished after {step + 1} steps.")
+            print(
+                f"Episode finished after "
+                f"{step + 1} steps."
+            )
             break
 
     print(f"Total reward: {total_reward}")
