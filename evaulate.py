@@ -1,6 +1,3 @@
-
-"""Evaluate a trained DQN agent on CartPole-v1."""
-
 import csv
 import os
 
@@ -14,12 +11,6 @@ def evaluate(
     model_path: str = "dqn_cartpole.pt",
     num_episodes: int = 100,
 ) -> None:
-    """Evaluate a trained DQN using a greedy policy.
-
-    Args:
-        model_path: Path to the saved PyTorch model.
-        num_episodes: Number of evaluation episodes.
-    """
     env = gym.make("CartPole-v1")
 
     state_size = env.observation_space.shape[0]

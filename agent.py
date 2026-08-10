@@ -1,4 +1,3 @@
-"""Deep Q-Network agent implementation."""
 
 import random
 
@@ -11,7 +10,6 @@ from replay_buffer import ReplayBuffer
 
 
 class DQNAgent:
-    """Agent implementing the core components of Deep Q-Learning."""
 
     def __init__(
         self,
@@ -23,17 +21,7 @@ class DQNAgent:
         batch_size: int = 64,
         buffer_size: int = 100_000,
     ) -> None:
-        """Initialize the DQN agent.
 
-        Args:
-            state_size: Dimension of the environment observation.
-            action_size: Number of possible actions.
-            device: Device on which PyTorch computations are performed.
-            learning_rate: Adam optimizer learning rate.
-            gamma: Discount factor for future rewards.
-            batch_size: Number of transitions used per training step.
-            buffer_size: Maximum number of transitions in replay memory.
-        """
         self.state_size = state_size
         self.action_size = action_size
         self.device = device
@@ -103,7 +91,6 @@ class DQNAgent:
         done: bool,
         info: dict[str, object],
     ) -> None:
-        """Store a transition in replay memory."""
         self.replay_buffer.add(
             state,
             action,
@@ -114,19 +101,15 @@ class DQNAgent:
         )
 
     def update_target_network(self) -> None:
-        """Copy Q-network weights into the target network."""
         self.target_network.load_state_dict(
             self.q_network.state_dict()
         )
 
     def learn(self) -> float:
-        """Update the Q-network using a batch from replay memory."""
         states, actions, rewards, next_states, dones = self.replay_buffer.sample()
 
-        # Q-values predicted by the online network for the actions taken.
         current_q_values = self.q_network(states).gather(1, actions)
 
-        # Compute target Q-values without tracking gradients.
         with torch.no_grad():
             next_q_values = self.target_network(next_states).max(
                 dim=1,

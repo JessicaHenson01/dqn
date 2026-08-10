@@ -1,10 +1,7 @@
-"""Verify the CartPole-v1 environment setup."""
-
 import gymnasium as gym
 
 
 def main():
-    """Create CartPole, step through it, and verify rendering."""
     env = gym.make("CartPole-v1", render_mode="human")
 
     state, info = env.reset()
@@ -16,7 +13,6 @@ def main():
     total_reward = 0.0
 
     for step in range(200):
-        # Random action for environment verification only.
         action = env.action_space.sample()
 
         next_state, reward, terminated, truncated, info = env.step(action)

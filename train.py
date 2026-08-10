@@ -14,7 +14,6 @@ def evaluate_agent(
     agent: DQNAgent,
     num_episodes: int = 10,
 ) -> float:
-    """Evaluate the agent using a purely greedy policy."""
     eval_env = gym.make("CartPole-v1")
 
     rewards = []
@@ -46,7 +45,6 @@ def evaluate_agent(
 
 
 def train() -> DQNAgent:
-    """Train and return a DQN agent."""
     env = gym.make("CartPole-v1")
 
     state_size = env.observation_space.shape[0]

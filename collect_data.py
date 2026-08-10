@@ -1,5 +1,3 @@
-"""Collect CartPole transitions using an epsilon-greedy DQN agent."""
-
 import gymnasium as gym
 import torch
 
@@ -12,17 +10,7 @@ def collect_episodes(
     num_episodes: int,
     epsilon: float,
 ) -> list[float]:
-    """Run episodes and store transitions in the replay buffer.
 
-    Args:
-        env: Gymnasium environment.
-        agent: DQN agent used to select actions.
-        num_episodes: Number of episodes to collect.
-        epsilon: Probability of selecting a random action.
-
-    Returns:
-        Total reward obtained during each episode.
-    """
     episode_rewards = []
 
     for episode in range(num_episodes):
@@ -65,7 +53,6 @@ def collect_episodes(
 
 
 def main() -> None:
-    """Create the environment and collect experience."""
     env = gym.make("CartPole-v1")
 
     state_size = env.observation_space.shape[0]

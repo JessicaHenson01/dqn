@@ -9,8 +9,6 @@ import torch
 
 
 class Experience(NamedTuple):
-    """A single reinforcement-learning transition."""
-
     state: np.ndarray
     action: int
     reward: float
@@ -20,21 +18,13 @@ class Experience(NamedTuple):
 
 
 class ReplayBuffer:
-    """Fixed-size buffer for storing environment transitions."""
-
     def __init__(
         self,
         capacity: int,
         batch_size: int,
         device: torch.device,
     ) -> None:
-        """Initialize the replay buffer.
 
-        Args:
-            capacity: Maximum number of experiences to store.
-            batch_size: Number of experiences sampled per training update.
-            device: PyTorch device used for returned tensors.
-        """
         self.memory = deque(maxlen=capacity)
         self.batch_size = batch_size
         self.device = device
@@ -48,7 +38,6 @@ class ReplayBuffer:
         done: bool,
         info: dict[str, Any],
     ) -> None:
-        """Store one experience in the replay buffer."""
         experience = Experience(
             state,
             action,
@@ -68,7 +57,6 @@ class ReplayBuffer:
         torch.Tensor,
         torch.Tensor,
     ]:
-        """Randomly sample a batch of experiences."""
         experiences = random.sample(self.memory, k=self.batch_size)
 
         states = torch.tensor(
@@ -104,5 +92,4 @@ class ReplayBuffer:
         return states, actions, rewards, next_states, dones
 
     def __len__(self) -> int:
-        """Return the current number of stored experiences."""
         return len(self.memory)
