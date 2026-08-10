@@ -1,4 +1,5 @@
 """Train and periodically evaluate a Deep Q-Network on CartPole-v1."""
+# pylint: disable=duplicate-code
 
 import csv
 import os
